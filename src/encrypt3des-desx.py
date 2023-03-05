@@ -201,7 +201,7 @@ key_white1_b = shiftLeft(key_bit,1)
 key_white2_b = shiftLeft(key_bit,3)
 
 #key cipher first & second
-key_first = shiftLeft(key_bit,3)
+key_first = shiftLeft(key_bit,2)
 key_first = key_first.to01()
 key_second = shiftLeft(key_bit,4)
 key_second = key_second.to01()
