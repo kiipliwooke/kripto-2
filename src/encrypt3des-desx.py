@@ -9,8 +9,8 @@ pBoxInv = [3,13,56,34,23,64,31,6,50,20,38,26,59,46,53,11,47,41,51,52,43,28,48,39
 xBoxLeft = [19,31,38,14,53,51,18,29,43,4,6,64,23,47,34,49,62,21,56,36,26,15,45,58,25,59,1,44,16,30,57,35,61,7,20,32,33,63,17,12]
 xBoxRight = [8,48,24,41,17,33,55,14,50,5,57,2,19,20,32,29,36,10,34,46,21,27,56,12,54,52,3,9,44,22,45,11,60,37,42,15,39,40,28,64]
 
-plaintext = "10111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
-key = "10111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+# plaintext = "10011111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111101"
+key = "10000000000000000000000000011111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
 
 def makeBit(str, n):
     tmp = ""
@@ -140,52 +140,111 @@ def decrypt(ciphertext, key):
     plain = unite(left_cipher, right_cipher)
     return plain
 
+def hex2bin(s):
+    mp = {'0': "0000",
+          '1': "0001",
+          '2': "0010",
+          '3': "0011",
+          '4': "0100",
+          '5': "0101",
+          '6': "0110",
+          '7': "0111",
+          '8': "1000",
+          '9': "1001",
+          'A': "1010",
+          'B': "1011",
+          'C': "1100",
+          'D': "1101",
+          'E': "1110",
+          'F': "1111"}
+    bin = ""
+    for i in range(len(s)):
+        bin = bin + mp[s[i]]
+    return bin
+ 
+# Binary to hexadecimal conversion
+ 
+ 
+def bin2hex(s):
+    mp = {"0000": '0',
+          "0001": '1',
+          "0010": '2',
+          "0011": '3',
+          "0100": '4',
+          "0101": '5',
+          "0110": '6',
+          "0111": '7',
+          "1000": '8',
+          "1001": '9',
+          "1010": 'A',
+          "1011": 'B',
+          "1100": 'C',
+          "1101": 'D',
+          "1110": 'E',
+          "1111": 'F'}
+    hex = ""
+    for i in range(0, len(s), 4):
+        ch = ""
+        ch = ch + s[i]
+        ch = ch + s[i + 1]
+        ch = ch + s[i + 2]
+        ch = ch + s[i + 3]
+        hex = hex + mp[ch]
+ 
+    return hex
 
+plain_hex = "0123456789ABCDEF0123456789ABCDEF"
+plaintext = hex2bin(plain_hex)
 key_bit = bitarray(makeBit(key,128))
 #key whitening
 key_white1_b = shiftLeft(key_bit,1)
-key_white2_b = shiftLeft(key_bit,2)
+key_white2_b = shiftLeft(key_bit,3)
 
-#key first & second
+#key cipher first & second
 key_first = shiftLeft(key_bit,3)
 key_first = key_first.to01()
 key_second = shiftLeft(key_bit,4)
 key_second = key_second.to01()
 
-plain_bit = bitarray(makeBit(plaintext,128))
+
 # Start Encrypt Plaintext
+print("Start Enkripsi")
 print(bitarray(plaintext))
+print(plain_hex)
+plain_bit = bitarray(makeBit(plaintext,128))
 
 #First key whitening
 plain_whitened = plain_bit ^ key_white1_b
-plain_w_string = plain_whitened.to01()
 #first encrypt using key cipher 1
-cipher = encrypt(plain_w_string, key_first)
+cipher = encrypt(plain_whitened.to01(), key_first)
 #second decrypt using key cipher 2
 cipher = decrypt(cipher, key_second)
 #third encrypt using key cipher 1
-cipher_s = cipher.to01()
-cipher = encrypt(cipher_s, key_first)
+cipher = encrypt(cipher.to01(), key_first)
 
 #Second key whitening
 cipher_whitened = cipher ^ key_white2_b
-cipher_w_string = cipher_whitened.to01()
+cipher_result = cipher_whitened.to01()
 print("Hasil Enkripsi:")
-print(cipher_w_string)
+print(cipher_result)
+print(bin2hex(cipher_result))
 
 # Start Decrypt Cyphertext
-#Second key whitening
+print("Start Dekripsi")
+
+#Second key unwhitening
 cipher_unwhitened = cipher_whitened ^ key_white2_b
+
 #first decrypt using key cipher 1
 plain = decrypt(cipher_unwhitened, key_first)
 #second encrypt using key cipher 2
-plain_s = plain.to01()
-plain = encrypt(plain_s, key_second)
+plain = encrypt(plain.to01(), key_second)
 #third decrypt using key cipher 1
 plain = decrypt(plain, key_first)
 
-#First key whitening
-plain_unwhitened = plain_bit ^ key_white1_b
+#First key unwhitening
+plain = plain ^ key_white1_b
 
 print("Hasil Dekripsi:")
-print(plain_unwhitened.to01())
+print(plain.to01())
+print(bin2hex(plain.to01()))
